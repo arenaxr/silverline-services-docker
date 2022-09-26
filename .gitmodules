@@ -1,9 +1,3 @@
 [submodule "dashboard"]
 	path = dashboard
 	url = https://github.com/SilverLineFramework/dashboard
-[submodule "orchestrator"]
-	path = orchestrator
-	url = https://github.com/SilverLineFramework/orchestrator.git
-[submodule "sideload-runtime"]
-	path = sideload-runtime
-	url = https://github.com/SilverLineFramework/sideload-runtime.git
