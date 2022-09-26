@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  dashboard:
+    build: dashboard
+    environment: 
+      - API_HOST=${DASHBOARD_ORCHESTRATOR_API_HOST}
+      - API_PORT=${DASHBOARD_ORCHESTRATOR_API_PORT}
+      - CORS_DOMAIN_REGEX=${DASHBOARD_CORS_DOMAIN_REGEX}
+      # escape var for $ in envsubst templates
+      - ESC=$$
+    ports:
+      - ${DASHBOARD_PORT:-8000}:80
+    depends_on:
+      - influxdb      
+    restart: unless-stopped
+#    command: sleep 100000
+    command: /bin/sh -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    #command: /bin/sh -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && sleep 10000;"
+
+  influxdb:
+    image: influxdb:2.4-alpine 
+    environment: 
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    ports:
+      - 18086:8086  # Initial setup, automate and remove later
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    restart: unless-stopped
+    
+  telegraf:
+    image: telegraf:1.24-alpine
+    environment: 
+      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      - MQTT_SERVER=${MQTT_SERVER}
+      - MQTT_TOPIC=${MQTT_TOPIC}
+      - MQTT_CLIENTID=${MQTT_CLIENTID:-influx_metric_logger}
+    depends_on:
+      - influxdb
+    volumes:
+      - ./conf/telegraf:/etc/telegraf/:ro
+    links:
+      - influxdb
+    restart: unless-stopped
+    
+  grafana:
+    image: grafana/grafana-oss:9.1.6  # alpine is default
+    depends_on:
+      - influxdb
+    user: "472"
+    environment:
+      - TZ=${TZ}
+      - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true  # TODO: provision viewer user w/ reverse proxy + auth headers
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_ANONYMOUS_HIDE_VERSION=true
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+    links:
+      - influxdb
+    ports:
+      - 13000:3000      
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    restart: unless-stopped
+
+volumes:
+  influxdb_data:
+  grafana_data:
