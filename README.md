@@ -9,7 +9,7 @@ Creates several containers with Silverline services:
 * Metrics Agent (telegraf)
 * Plots (Graphana)
 
-The orchestrator, runtime and dashboard are submodules of this repo. The nginx container serves the dashboard files and acts as proxy.
+The dashboard is a submodule of this repo. Orchestrator and runtime are started from pre-built images. The nginx container serves the dashboard files and acts as proxy.
 
 ## Quick Setup
 
