@@ -34,8 +34,16 @@ services:
       - orchestrator
     restart: unless-stopped # service will respawn unless we tell docker to stop it
     
+  
   dashboard:
-    build: dashboard
+    build: 
+      # NOTE: dashboard config is only reflected when container is built
+      context: dashboard
+      dockerfile: Dockerfile
+      args:
+        - DCONF_PUBSUBURL='wss:\/\/${MQTT_WEBHOST}\/mqtt\/' # must be a valid sed expression
+        - DCONF_PUBSUBUSERNAME='${MQTT_USER}'
+        - DCONF_PUBSUBPASSWORD='${MQTT_PWD}'
     volumes:
       - ./conf/nginx.conf.template:/etc/nginx/templates/default.conf.template
     environment: 

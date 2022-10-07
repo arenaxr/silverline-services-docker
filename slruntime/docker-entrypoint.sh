@@ -19,7 +19,7 @@
 
 dft_config_file=${RTONF_CONF_FILE:-config/settings.dft.yaml}
 echo "Config file: "$dft_config_file
-out_config_file=config/settings.json
+out_config_file=config/settings.yaml
 cp $dft_config_file $out_config_file
 
 if [[ ! -z "${RTCONF_SECRETS_FILE}" ]]; then
@@ -40,7 +40,7 @@ do
   conf_key=RTCONF_`echo $key | tr '[:lower:]' '[:upper:]'`
   if [[ ! -z "${!conf_key}" ]]; then
     echo  "Replacing conf: "${key}:${!conf_key}
-    sed -i "s/$key\:.*/$key\:${!conf_key}/" $out_config_file
+    sed -i "s/$key\:.*/$key\: ${!conf_key}/" $out_config_file
   fi 
 done 
 
