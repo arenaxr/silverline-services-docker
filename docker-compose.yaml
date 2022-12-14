@@ -15,26 +15,6 @@ services:
     command: ./docker-entrypoint.sh
     restart: unless-stopped # service will respawn unless we tell docker to stop it
     
-  slruntime:
-    image: slframework/sideload-runtime:${SIDELOAD_RUNTIME_VERSION:-latest} # pulls from https://hub.docker.com/repository/docker/slframework/sideload-runtime
-    volumes:
-      - ./conf/slruntime/settings.dft.yaml:/usr/src/app/config/settings.dft.yaml:ro      
-      - ./slruntime/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro 
-      - ./wait-for-it.sh:/usr/src/app/wait-for-it.sh:ro
-      # access to docker service on host
-      - /var/run/docker.sock:/var/run/docker.sock 
-    environment:
-      - RTCONF_HOST=${MQTT_SERVER}
-      - RTCONF_PORT=${MQTT_SERVER_PORT}
-      - RTCONF_SECRETS_FILE=/usr/src/app/config/.secrets.yaml # write mqtt user and pass to this file
-      - RTCONF_MQTT_USER=${MQTT_USER}
-      - RTCONF_MQTT_PWD=${MQTT_PWD}
-    command: ./docker-entrypoint.sh
-    depends_on:
-      - orchestrator
-    restart: unless-stopped # service will respawn unless we tell docker to stop it
-    
-  
   dashboard:
     build: 
       # NOTE: dashboard config is only reflected when container is built
