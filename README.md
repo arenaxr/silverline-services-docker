@@ -52,7 +52,6 @@ MQTT_USER=auser
 # mqtt password; e.g.: a very long JWT: eyJ0eXAiOiJKV1QiLCJhbGc...  (compose-from-arena-services.sh will get this config from arena-services-docker)
 MQTT_PWD=apasswd
 
-
 # Dashboard
 # port exposed for the dashboard; e.g. 8001
 DASHBOARD_PORT=dashboard-port
