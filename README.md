@@ -3,7 +3,7 @@
 Creates several containers with Silverline services:
 
 * Orchestrator
-* Demo Runtime
+* Demo Runtime [TODO]
 * Web server for dashboard (Nginx)
 * Database (influxdb)
 * Metrics Agent (telegraf)
@@ -23,38 +23,55 @@ git clone https://github.com/arenaxr/silverline-services-docker.git --recurse-su
 
 3. Modify configuration:
 
+
 - Copy the example configuration `env.default` to `.env`
 ```bash
 cp env.default .env
 ```
 
-- Edit `MQTT_SERVER`, `DASHBOARD_ORCHESTRATOR_API_HOST` and `DASHBOARD_ORCHESTRATOR_API_PORT` in **.env**. This should reflect your setup.
+**If you have a arena-services-docker setup on the same machine, you can skip the MQTT section, as `compose-from-arena-services.sh` will fetch this configuration from arena-services-docker**
+
+- Edit `MQTT_SERVER`, `MQTT_SERVER_PORT`, `MQTT_WEBHOST`, `MQTT_WEBHOST_PATH`, `MQTT_TOPIC`, `MQTT_USER`, `MQTT_PWD`,`DASHBOARD_ORCHESTRATOR_API_HOST` and `DASHBOARD_ORCHESTRATOR_API_PORT` in **.env**. This should reflect your setup.
 
 ```bash
 ...
 
 # MQTT
-MQTT_SERVER=tcp://mqtt-broker-address:mqtt-broker-port
+# mqtt broker; e.g.: arena-dev1.conix.io (compose-from-arena-services.sh will get this config from arena-services-docker)
+MQTT_SERVER=broker-host
+# mqtt broker port; e.g.: 8883 (compose-from-arena-services.sh will get this config from arena-services-docker)
+MQTT_SERVER_PORT=broker-port
+# mqtt broker host for websocket connections; e.g.: arena-dev1.conix.io (compose-from-arena-services.sh will get this config from arena-services-docker)
+MQTT_WEBHOST=broker-web-host 
+# mqtt broker endpoint for websocket connections; 'mqtt' is usually a safe default
+MQTT_WEBHOST_PATH=mqtt
+# keepalive topic; this is usually a safe default
+MQTT_TOPIC=realm/proc/keepalive/# 
+# mqtt username; e.g.: cli (compose-from-arena-services.sh will get this config from arena-services-docker)
+MQTT_USER=auser
+# mqtt password; e.g.: a very long JWT: eyJ0eXAiOiJKV1QiLCJhbGc...  (compose-from-arena-services.sh will get this config from arena-services-docker)
+MQTT_PWD=apasswd
 
 # Dashboard
+# port exposed for the dashboard; e.g. 8001
 DASHBOARD_PORT=dashboard-port
+# host of the orchestrator where REST calls are available; e.g. arena-dev1.conix.io
 DASHBOARD_ORCHESTRATOR_API_HOST=orchestrator-host
+# orchestrator api port; e.g. 8000
 DASHBOARD_ORCHESTRATOR_API_PORT=orchestrator-port
 ...
 ```
-
-* ```MQTT_SERVER``` is the MQTT server address (e.g. `MQTT_SERVER=tcp://arena-dev1.conix.io:11883`).
-* ```DASHBOARD_ORCHESTRATOR_API_HOST``` indicates the host of the orchestrator where REST calls are available (e.g. 
-* ```DASHBOARD_PORT``` indicates the port exposed for the dashboard (e.g. `DASHBOARD_ORCHESTRATOR_API_HOST=80`; optional)
-`DASHBOARD_ORCHESTRATOR_API_HOST=arena-dev1.conix.io`)
-* ```DASHBOARD_ORCHESTRATOR_API_PORT``` indicates the port of the orchestrator where REST calls are available (e.g. `DASHBOARD_ORCHESTRATOR_API_PORT=18000`)
-
 > Optionally, for a more secure setup, you can change the `DOCKER_INFLUXDB_INIT_PASSWORD` and `DOCKER_INFLUXDB_INIT_ADMIN_TOKEN`. They can be any random secret string.
 
 4. You should be good to start all services in background (`-d`) using `docker-compose`:
 
 ```bash
  docker-compose up -d
+```
+
+**If you have a arena-services-docker setup on the same machine, instead use `compose-from-arena-services.sh` to fetch configuration from arena-services-docker:**
+```bash
+ ./compose-from-arena-services.sh up -d
 ```
 
 ### Update dashboard

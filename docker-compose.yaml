@@ -6,7 +6,7 @@ services:
     volumes:
       - ./conf/orchestrator/config.dft.json:/usr/src/app/config.dft.json:ro 
       - ./conf/orchestrator/key.json:/usr/src/app/key.json:ro
-      - ./orchestrator/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro
+      - ./provision/orchestrator/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro
     environment:
       - OCONF_PWD_FILE_CONTENTS=${MQTT_PWD}
       - OCONF_MQTT_USERNAME="${MQTT_USER}" # config strings going into json config file must have double quotes
@@ -31,7 +31,7 @@ services:
       # escape var for $ in envsubst templates
       - ESC=$$
     ports:
-      - ${DASHBOARD_PORT:-8000}:80
+      - ${DASHBOARD_PORT:-8001}:80
     depends_on:
       - orchestrator
 #      - influxdb      
@@ -56,14 +56,17 @@ services:
         max-size: "10m"
         max-file: "2"
     restart: unless-stopped
+
   telegraf:
     image: telegraf:1.24-alpine
     environment: 
       - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
       - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      # MQTT_SERVER not working; custom docker-entrypoint.sh will replace MQTT_SERVER for value of 
       #- MQTT_SERVER="tcp://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # non ssl connection
-      - MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
+      #- MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
+      - TCONF_MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
       - MQTT_TOPIC=${MQTT_TOPIC}
       - MQTT_CLIENTID=${MQTT_CLIENTID:-influx_metric_logger}
       - MQTT_USER=${MQTT_USER}
@@ -71,10 +74,13 @@ services:
     depends_on:
       - influxdb
     volumes:
-      - ./conf/telegraf:/etc/telegraf/:ro
+      - ./provision/telegraf/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - ./conf/telegraf/telegraf.dft.conf:/telegraf.dft.conf:ro
     links:
       - influxdb
+    command: /docker-entrypoint.sh 
     restart: unless-stopped
+
   grafana:
     image: grafana/grafana-oss:9.1.6  # alpine is default
     depends_on:
@@ -96,8 +102,8 @@ services:
       - GF_USERS_DEFAULT_THEME=light
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./provision/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./provision/grafana/dashboards/:/var/lib/grafana/dashboards/
     links:
       - influxdb
     #ports:
