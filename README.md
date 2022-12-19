@@ -29,7 +29,7 @@ git clone https://github.com/arenaxr/silverline-services-docker.git --recurse-su
 cp env.default .env
 ```
 
-**If you have a arena-services-docker setup on the same machine, you can skip the MQTT section, as `compose-from-arena-services.sh` will fetch this configuration from arena-services-docker**
+**If you have a arena-services-docker setup on the same machine, you can skip the MQTT section and execute `init-env-from-arena-services.sh` to fetch this configuration from arena-services-docker**
 
 - Edit `MQTT_SERVER`, `MQTT_SERVER_PORT`, `MQTT_WEBHOST`, `MQTT_WEBHOST_PATH`, `MQTT_TOPIC`, `MQTT_USER`, `MQTT_PWD`,`DASHBOARD_ORCHESTRATOR_API_HOST` and `DASHBOARD_ORCHESTRATOR_API_PORT` in **.env**. This should reflect your setup.
 
@@ -67,11 +67,6 @@ DASHBOARD_ORCHESTRATOR_API_PORT=orchestrator-port
 
 ```bash
  docker-compose up -d
-```
-
-**If you have a arena-services-docker setup on the same machine, instead use `compose-from-arena-services.sh` to fetch configuration from arena-services-docker:**
-```bash
- ./compose-from-arena-services.sh up -d
 ```
 
 ### Update dashboard

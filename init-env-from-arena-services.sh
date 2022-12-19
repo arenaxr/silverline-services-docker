@@ -29,11 +29,21 @@ source  $ARENA_SERVICES_FOLDER/.env
 source  $ARENA_SERVICES_FOLDER/secret.env
 
 # define env based on config in arena-services-docker
-# NOTE: values defined in shell take precedence over values in .env
 export MQTT_SERVER=${MQTT_HOSTNAME}
 export MQTT_SERVER_PORT=${MQTT_PORT}
 export MQTT_WEBHOST=${HOSTNAME}
 export MQTT_USER=arena_arts
 export MQTT_PWD=${SERVICE_ARENA_ARTS_JWT}
 
-docker-compose $@
+echo "MQTT_SERVER=${MQTT_SERVER}"
+echo "MQTT_SERVER_PORT=${MQTT_SERVER_PORT}"
+echo "MQTT_WEBHOST=${MQTT_WEBHOST}"
+echo "MQTT_USER=arena_arts"
+echo "MQTT_PWD=${MQTT_PWD}"
+
+# replace values in .env
+sed -i "s/MQTT_SERVER=.*/MQTT_SERVER=\"${MQTT_SERVER}\"/" ./.env 
+sed -i "s/MQTT_SERVER_PORT=.*/MQTT_SERVER_PORT=${MQTT_SERVER_PORT}/" ./.env 
+sed -i "s/MQTT_WEBHOST=.*/MQTT_WEBHOST=\"${MQTT_WEBHOST}\"/" ./.env 
+sed -i "s/MQTT_USER=.*/MQTT_USER=\"${MQTT_USER}\"/" ./.env 
+sed -i "s/MQTT_PWD=.*/MQTT_PWD=\"${MQTT_PWD}\"/" ./.env 
