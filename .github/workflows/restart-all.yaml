@@ -20,4 +20,4 @@ jobs:
           envs: TARGET
           script: |
              cd  $ARENAXR_SL_SERVICES_TARGET
-             ./reset_all.sh
+             ./restart_all.sh
