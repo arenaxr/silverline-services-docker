@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  deploy:
+  restart:
     runs-on: ubuntu-latest
     steps:
       - name: ssh deploy
@@ -19,5 +19,5 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           envs: TARGET
           script: |
-             cd  $ARENAXR_SL_SERVICES_TARGET
+             cd $TARGET
              ./restart_all.sh
