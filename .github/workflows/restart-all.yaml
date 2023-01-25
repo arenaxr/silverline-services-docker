@@ -1,0 +1,23 @@
+name: Manual restart orchestrator, dashboard and runtime on ARENAXR (SSH)
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ssh deploy
+        #if: $GITHUB_SHA == github.event.inputs.confirm 
+        uses: appleboy/ssh-action@master
+        env:
+          TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
+        with:
+          host: ${{ secrets.ARENA_MAIN_DEPLOY_HOST }}
+          username: ${{ secrets.ARENA_MAIN_DEPLOY_USER }}
+          key: ${{ secrets.ARENA_MAIN_DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          envs: TARGET
+          script: |
+             cd  $ARENAXR_SL_SERVICES_TARGET
+             ./reset_all.sh
