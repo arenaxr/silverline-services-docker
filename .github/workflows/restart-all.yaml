@@ -7,8 +7,7 @@ jobs:
   restart:
     runs-on: ubuntu-latest
     steps:
-      - name: ssh deploy
-        #if: $GITHUB_SHA == github.event.inputs.confirm 
+      - name: restart (ssh)
         uses: appleboy/ssh-action@master
         env:
           TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
@@ -21,3 +20,16 @@ jobs:
           script: |
              cd $TARGET
              ./restart_all.sh
+      - name: check status (ssh)
+        uses: appleboy/ssh-action@master
+        env:
+          TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
+        with:
+          host: ${{ secrets.ARENA_MAIN_DEPLOY_HOST }}
+          username: ${{ secrets.ARENA_MAIN_DEPLOY_USER }}
+          key: ${{ secrets.ARENA_MAIN_DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          envs: TARGET
+          script: |
+             cd $TARGET
+             ./check_status.sh
