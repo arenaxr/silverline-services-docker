@@ -10,26 +10,26 @@ jobs:
       - name: restart (ssh)
         uses: appleboy/ssh-action@master
         env:
-          TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
+          SERVICES_TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
         with:
           host: ${{ secrets.ARENA_MAIN_DEPLOY_HOST }}
           username: ${{ secrets.ARENA_MAIN_DEPLOY_USER }}
           key: ${{ secrets.ARENA_MAIN_DEPLOY_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
-          envs: TARGET
+          envs: SERVICES_TARGET
           script: |
-             cd $TARGET
+             cd $SERVICES_TARGET
              ./restart_all.sh
       - name: check status (ssh)
         uses: appleboy/ssh-action@master
         env:
-          TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
+          SERVICES_TARGET: ${{ secrets.ARENAXR_SL_SERVICES_TARGET }}
         with:
           host: ${{ secrets.ARENA_MAIN_DEPLOY_HOST }}
           username: ${{ secrets.ARENA_MAIN_DEPLOY_USER }}
           key: ${{ secrets.ARENA_MAIN_DEPLOY_KEY }}
           port: ${{ secrets.DEPLOY_PORT }}
-          envs: TARGET
+          envs: SERVICES_TARGET
           script: |
-             cd $TARGET
+             cd $SERVICES_TARGET
              ./check_status.sh
