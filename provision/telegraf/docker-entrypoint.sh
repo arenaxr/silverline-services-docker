@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # writes env variables to /etc/telegraf/telegraf.conf (overrriding telegraf.dft.conf)
 # supports:
 #    TCONF_CONF_FILE: **input** config filename (default: /telegraf.dft.conf)
