@@ -1,27 +1,33 @@
 version: '3'
 
 services:
-  orchestrator:
-    image: slframework/orchestrator:${ORCHESTRATOR_VERSION:-latest} # pulls from https://hub.docker.com/repository/docker/slframework/orchestrator
+    
+  slruntime:
+    image: slframework/applauncher-runtime:${APPLAUNCHER_RUNTIME_VERSION:-latest} # pulls from https://hub.docker.com/repository/docker/slframework/sideload-runtime
     volumes:
-      - ./conf/orchestrator/config.dft.json:/usr/src/app/config.dft.json:ro 
-      - ./conf/orchestrator/key.json:/usr/src/app/key.json:ro
-      - ./provision/orchestrator/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro
+      - ./conf/slruntime/settings.dft.yaml:/usr/src/app/config/settings.dft.yaml:ro
+      - ./conf/slruntime/appsettings.dft.yaml:/usr/src/app/config/appsettings.dft.yaml:ro
+      - ./slruntime/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro 
+      - ./wait-for-it.sh:/usr/src/app/wait-for-it.sh:ro
+      # access to docker service on host
+      - /var/run/docker.sock:/var/run/docker.sock 
     environment:
-      - OCONF_PWD_FILE_CONTENTS=${MQTT_PWD}
-      - OCONF_MQTT_USERNAME="${MQTT_USER}" # config strings going into json config file must have double quotes
-      - OCONF_MQTT="${MQTT_SERVER}" # config strings going into json config file must have double quotes
-      - OCONF_MQTT_PORT=${MQTT_SERVER_PORT}
+      - RTCONF_HOST=${MQTT_SERVER}
+      - RTCONF_PORT=${MQTT_SERVER_PORT}
+      - RTCONF_SECRETS_FILE=/usr/src/app/config/.secrets.yaml # write mqtt user and pass to this file
+      - RTCONF_MQTT_USER=${MQTT_USER}
+      - RTCONF_MQTT_PWD=${MQTT_PWD}
     command: ./docker-entrypoint.sh
     restart: unless-stopped # service will respawn unless we tell docker to stop it
     
+  
   dashboard:
     build: 
       # NOTE: dashboard config is only reflected when container is built
       context: dashboard
       dockerfile: Dockerfile
       args:
-        - DCONF_PUBSUBURL='wss:\/\/${MQTT_WEBHOST}\/mqtt\/' # must be a valid sed expression
+        - DCONF_PUBSUBURL='${MQTT_WEBHOST}\/${MQTT_WEBHOST_PATH}\/' # must be a valid sed expression
         - DCONF_PUBSUBUSERNAME='${MQTT_USER}'
         - DCONF_PUBSUBPASSWORD='${MQTT_PWD}'
     volumes:
@@ -31,9 +37,8 @@ services:
       # escape var for $ in envsubst templates
       - ESC=$$
     ports:
-      - ${DASHBOARD_PORT:-8001}:80
-    depends_on:
-      - orchestrator
+      - ${DASHBOARD_PORT:-8000}:80
+#    depends_on:
 #      - influxdb      
     restart: unless-stopped
 
@@ -58,15 +63,13 @@ services:
     restart: unless-stopped
 
   telegraf:
-    image: telegraf:1.24-alpine
+    image: telegraf
     environment: 
       - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
       - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
-      # MQTT_SERVER not working; custom docker-entrypoint.sh will replace MQTT_SERVER for value of 
       #- MQTT_SERVER="tcp://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # non ssl connection
-      #- MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
-      - TCONF_MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
+      - MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
       - MQTT_TOPIC=${MQTT_TOPIC}
       - MQTT_CLIENTID=${MQTT_CLIENTID:-influx_metric_logger}
       - MQTT_USER=${MQTT_USER}
@@ -74,13 +77,10 @@ services:
     depends_on:
       - influxdb
     volumes:
-      - ./provision/telegraf/docker-entrypoint.sh:/docker-entrypoint.sh:ro
-      - ./conf/telegraf/telegraf.dft.conf:/telegraf.dft.conf:ro
+      - ./conf/telegraf:/etc/telegraf/:ro
     links:
       - influxdb
-    command: /docker-entrypoint.sh 
     restart: unless-stopped
-
   grafana:
     image: grafana/grafana-oss:9.1.6  # alpine is default
     depends_on:
@@ -102,8 +102,8 @@ services:
       - GF_USERS_DEFAULT_THEME=light
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./provision/grafana/provisioning/:/etc/grafana/provisioning/
-      - ./provision/grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
     links:
       - influxdb
     #ports:
