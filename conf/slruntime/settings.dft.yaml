@@ -9,14 +9,13 @@ loglevel: DEBUG
 runtime:
   name: rt1
   namespace: public  
-  #uuid: # leave blank to generate a new uuid
-  #uuid: cb65196b-0537-4364-939a-87d004babd4c # this would make the runtime have a fixed uuuid
-  reg_attempts: 1 # -1 = skip registration; 0 = infinite
+  uuid: 93b0e55b-e069-4153-86bf-d23dfe4f56fc # this will make the runtime have a fixed uuuid; comment to generate a new one when the runtime starts
+  reg_attempts: -1 # -1 = skip registration; 0 = infinite
   reg_timeout_seconds: 5
   reg_fail_error: false
   max_nmodules: 100
   realm: realm
-  ka_interval_sec: 2
+  ka_interval_sec: 1
   is_orchestration_runtime: false
   tags: ["arena-py", "containerized-modules"] 
 

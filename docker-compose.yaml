@@ -7,8 +7,7 @@ services:
     volumes:
       - ./conf/slruntime/settings.dft.yaml:/usr/src/app/config/settings.dft.yaml:ro
       - ./conf/slruntime/appsettings.dft.yaml:/usr/src/app/config/appsettings.dft.yaml:ro
-      - ./slruntime/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro 
-      - ./wait-for-it.sh:/usr/src/app/wait-for-it.sh:ro
+      - ./provision/slruntime/docker-entrypoint.sh:/usr/src/app/docker-entrypoint.sh:ro 
       # access to docker service on host
       - /var/run/docker.sock:/var/run/docker.sock 
     environment:
@@ -62,25 +61,28 @@ services:
         max-file: "2"
     restart: unless-stopped
 
-  telegraf:
-    image: telegraf
-    environment: 
-      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
-      #- MQTT_SERVER="tcp://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # non ssl connection
-      - MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
-      - MQTT_TOPIC=${MQTT_TOPIC}
-      - MQTT_CLIENTID=${MQTT_CLIENTID:-influx_metric_logger}
-      - MQTT_USER=${MQTT_USER}
-      - MQTT_PWD=${MQTT_PWD}
-    depends_on:
-      - influxdb
-    volumes:
-      - ./conf/telegraf:/etc/telegraf/:ro
-    links:
-      - influxdb
-    restart: unless-stopped
+  # telegraf:
+  #   image: telegraf
+  #   environment: 
+  #     - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+  #     - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+  #     - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+  #     #- MQTT_SERVER="tcp://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # non ssl connection
+  #     - MQTT_SERVER="ssl://${MQTT_SERVER}:${MQTT_SERVER_PORT}" # ssl connection
+  #     - MQTT_TOPIC=${MQTT_TOPIC}
+  #     - MQTT_CLIENTID=${MQTT_CLIENTID:-influx_metric_logger}
+  #     - MQTT_USER=${MQTT_USER}
+  #     - MQTT_PWD=${MQTT_PWD}
+  #   depends_on:
+  #     - influxdb
+  #   volumes:
+  #     - ./conf/telegraf:/etc/telegraf/:ro
+  #     - ./provision/telegraf/docker-entrypoint.sh:/docker-entrypoint.sh:ro 
+  #   links:
+  #     - influxdb
+  #   command: ./docker-entrypoint.sh        
+  #   restart: unless-stopped
+
   grafana:
     image: grafana/grafana-oss:9.1.6  # alpine is default
     depends_on:
@@ -102,8 +104,8 @@ services:
       - GF_USERS_DEFAULT_THEME=light
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./provision/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./provision/dashboards/:/var/lib/grafana/dashboards/
     links:
       - influxdb
     #ports:
