@@ -18,7 +18,7 @@ server {
 
   # Security config
   server_tokens off;
-  add_header X-Frame-Options "SAMEORIGIN";
+  #add_header X-Frame-Options "SAMEORIGIN";
 
   # Compression
   gzip on;
@@ -75,7 +75,7 @@ server {
     try_files $uri $uri/ /index.html;
 
     # Never cache index
-    add_header X-Frame-Options "DENY" always;
+    #add_header X-Frame-Options "DENY" always;
     add_header Cache-Control "no-store, no-cache, must-revalidate";
     # Never expire static files, which should be rev'd
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|json|xml|svg|woff|woff2|ttf|eot)$ {
