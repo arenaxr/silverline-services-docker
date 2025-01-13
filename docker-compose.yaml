@@ -26,7 +26,7 @@ services:
       context: dashboard
       dockerfile: Dockerfile
       args:
-        - DCONF_PUBSUBURL='${MQTT_WEBHOST}\/${MQTT_WEBHOST_PATH}\/' # must be a valid sed expression
+        #- DCONF_PUBSUBURL='${MQTT_WEBHOST}\/${MQTT_WEBHOST_PATH}\/' # must be a valid sed expression
         - DCONF_PUBSUBUSERNAME='${MQTT_USER}'
         - DCONF_PUBSUBPASSWORD='${MQTT_PWD}'
     volumes:

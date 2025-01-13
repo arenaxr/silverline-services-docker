@@ -31,7 +31,7 @@ source  $ARENA_SERVICES_FOLDER/secret.env
 # define env based on config in arena-services-docker
 export MQTT_SERVER=${MQTT_HOSTNAME}
 export MQTT_SERVER_PORT=${MQTT_PORT}
-export MQTT_WEBHOST=${HOSTNAME}
+export MQTT_WEBHOST="ws:\/\/${HOSTNAME}"
 export MQTT_USER=arena_arts
 export MQTT_PWD=${SERVICE_ARENA_ARTS_JWT}
 
