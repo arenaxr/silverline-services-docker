@@ -2,6 +2,9 @@
 
 echo -e "Restarting containers... \n"
 docker-compose down 2> /dev/null
+# kill runners
+(docker kill `docker ps | grep 'slruntime-.*-runner' | cut -d" " -f1` 2>&1) > /dev/null 
+
 docker-compose up -d 2> /dev/null
 docker-compose ps
 
