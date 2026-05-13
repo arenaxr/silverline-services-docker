@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  slruntime:
+    build:
+      context: ../applauncher-runtime
+      dockerfile: Dockerfile
